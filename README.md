@@ -139,3 +139,223 @@ public class AppConfig {
 - Using AOP can improve code modularity, readability, and maintainability.
 
 For more details, refer to Spring’s [official documentation](https://spring.io).
+
+Here's a detailed write-up of the **9 questions**, with explanations and code snippets for each, which you can include in your README.
+
+---
+
+## Questions
+
+### **Question 1: What is the Concept of AOP?**
+
+**Explanation**:  
+Aspect-Oriented Programming (AOP) separates cross-cutting concerns (e.g., logging, security) from business logic by defining aspects. Spring AOP allows you to weave behaviors into code at specified Join Points.
+
+**Code Example**:
+```java
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @Before("execution(* com.example.service.*.*(..))")
+    public void logBefore(JoinPoint joinPoint) {
+        System.out.println("Executing: " + joinPoint.getSignature());
+    }
+}
+```
+
+**Typical Cross-Cutting Concerns**:
+1. Logging
+2. Security
+3. Transactions
+
+---
+
+### **Question 2: What is a Pointcut, Join Point, Advice, Aspect, and Weaving?**
+
+**Definitions**:
+- **Join Point**: Specific points in program execution (e.g., method calls).
+- **Pointcut**: Matches Join Points (e.g., method names, annotations).
+- **Advice**: Code injected at Join Points (e.g., `@Before`, `@After`).
+- **Aspect**: Combines Pointcuts and Advices.
+- **Weaving**: Applying aspects to target code (e.g., Spring uses runtime weaving).
+
+**Code Example**:
+```java
+@Aspect
+@Component
+public class ExampleAspect {
+
+    @Pointcut("execution(* com.example.service.*.*(..))")
+    public void serviceMethods() {}
+
+    @Before("serviceMethods()")
+    public void logBeforeService(JoinPoint joinPoint) {
+        System.out.println("Before: " + joinPoint.getSignature());
+    }
+}
+```
+
+---
+
+### **Question 3: How Does Spring Solve Cross-Cutting Concerns?**
+
+**Explanation**:  
+Spring AOP uses runtime proxies to handle cross-cutting concerns, providing two types of proxies:
+1. **JDK Proxy**: For interfaces.
+2. **CGLIB Proxy**: For classes without interfaces.
+
+**Code Example**:
+```java
+@EnableAspectJAutoProxy(proxyTargetClass = true)
+@Configuration
+public class AppConfig {
+}
+```
+
+---
+
+### **Question 4: What are the Limitations of Proxy Types?**
+
+**Limitations**:
+- **JDK Proxies**:
+   - Requires interfaces.
+   - Does not support self-invocation.
+- **CGLIB Proxies**:
+   - Cannot proxy final methods or classes.
+   - Only public/protected/package methods are proxied.
+
+**Code Example**:
+```java
+@Component
+public class EmployeeRepository {
+
+    public void saveEmployee(Employee employee) {
+        System.out.println("Employee saved: " + employee);
+    }
+
+    protected void deleteEmployee(long id) {
+        System.out.println("Deleted employee with id: " + id);
+    }
+}
+```
+
+---
+
+### **Question 5: How Many Advice Types Does Spring Support?**
+
+**Advice Types**:
+1. **@Before**: Executes before a Join Point.
+2. **@After**: Executes after a Join Point.
+3. **@AfterReturning**: Executes after a successful execution.
+4. **@AfterThrowing**: Executes after an exception is thrown.
+5. **@Around**: Full control over Join Point execution.
+
+**Code Example**:
+```java
+@Aspect
+@Component
+public class AdviceExample {
+
+    @AfterReturning(pointcut = "execution(* com.example.service.*.*(..))", returning = "result")
+    public void afterReturningAdvice(Object result) {
+        System.out.println("Returned: " + result);
+    }
+
+    @Around("execution(* com.example.service.*.*(..))")
+    public Object aroundAdvice(ProceedingJoinPoint joinPoint) throws Throwable {
+        System.out.println("Before: " + joinPoint.getSignature());
+        Object result = joinPoint.proceed();
+        System.out.println("After: " + joinPoint.getSignature());
+        return result;
+    }
+}
+```
+
+---
+
+### **Question 6: How to Enable Detection of `@Aspect`?**
+
+**Explanation**:
+- Use `@EnableAspectJAutoProxy` in a `@Configuration` class.
+- Ensure `spring-aop` dependency is included.
+
+**Code Example**:
+```java
+@Configuration
+@EnableAspectJAutoProxy
+@ComponentScan(basePackages = "com.example")
+public class AppConfig {
+}
+```
+
+---
+
+### **Question 7: How to Understand Pointcut Expressions?**
+
+**Explanation**:
+Pointcut expressions define Join Points for applying Advices. Common designators:
+- `execution`: Matches method executions.
+- `within`: Matches types in a package.
+- `@annotation`: Matches annotated methods.
+
+**Code Example**:
+```java
+@Aspect
+@Component
+public class PointcutExample {
+
+    @Before("execution(* com.example.service.*.*(..))")
+    public void beforeExecutionExample(JoinPoint joinPoint) {
+        System.out.println("Executing: " + joinPoint.getSignature());
+    }
+}
+```
+
+---
+
+### **Question 8: What is the JoinPoint Argument Used For?**
+
+**Explanation**:
+`JoinPoint` provides metadata about the intercepted method (e.g., method name, arguments).
+
+**Code Example**:
+```java
+@Aspect
+@Component
+public class JoinPointExample {
+
+    @Before("execution(* com.example.service.*.*(..))")
+    public void logJoinPointDetails(JoinPoint joinPoint) {
+        System.out.println("Method: " + joinPoint.getSignature());
+        System.out.println("Arguments: " + Arrays.toString(joinPoint.getArgs()));
+    }
+}
+```
+
+---
+
+### **Question 9: What is a ProceedingJoinPoint?**
+
+**Explanation**:  
+`ProceedingJoinPoint` is used in `@Around` advice to control the method execution.
+
+**Code Example**:
+```java
+@Aspect
+@Component
+public class ProceedingJoinPointExample {
+
+    @Around("execution(* com.example.service.*.*(..))")
+    public Object aroundAdvice(ProceedingJoinPoint joinPoint) throws Throwable {
+        System.out.println("Before: " + joinPoint.getSignature());
+        Object result = joinPoint.proceed(); // Proceed with original method.
+        System.out.println("After: " + joinPoint.getSignature());
+        return result;
+    }
+}
+```
+
+---
+
+Feel free to add these to your README for a complete explanation of the AOP concepts with relevant examples!
